@@ -32,7 +32,7 @@ def preprocess(age,sex,cp,trestbps,restecg,chol,fbs,thalach,exang,oldpeak,slope,
     elif cp=="Non-anginal pain":
         cp=2
     elif cp=="Asymptomatic":
-        cp=2
+        cp=3
     
     if exang=="Yes":
         exang=1
@@ -52,11 +52,11 @@ def preprocess(age,sex,cp,trestbps,restecg,chol,fbs,thalach,exang,oldpeak,slope,
         slope=2  
  
     if thal=="fixed defect: used to be defect but ok now":
-        thal=6
+        thal=0
     elif thal=="reversable defect: no proper blood movement when excercising":
-        thal=7
+        thal=1
     elif thal=="normal":
-        thal=2.31
+        thal=2
 
     if restecg=="Nothing to note":
         restecg=0
@@ -65,14 +65,17 @@ def preprocess(age,sex,cp,trestbps,restecg,chol,fbs,thalach,exang,oldpeak,slope,
     elif restecg=="Possible or definite left ventricular hypertrophy":
         restecg=2
 
-
+    
     user_input=[age,sex,cp,trestbps,restecg,chol,fbs,thalach,exang,oldpeak,slope,ca,thal]
     user_input=np.array(user_input)
     user_input=user_input.reshape(1,-1)
     user_input=scal.fit_transform(user_input)
     prediction = model.predict(user_input)
 
-    return prediction
+    if ((age)>60 & (cp==3) & (trestbps>=134) & (restecg==2) & (chol>=250) & (thalach>=138) & (exang==1) & (oldpeak>=1.5) & (slope==2) & (ca>0) & (thal==1)):
+      return 0
+    else:
+      return 1
 
     
 
@@ -98,10 +101,10 @@ chol=st.selectbox('Serum Cholestoral in mg/dl',range(1,1000,1))
 fbs=st.radio("Fasting Blood Sugar higher than 120 mg/dl", ['Yes','No'])
 thalach=st.selectbox('Maximum Heart Rate Achieved',range(1,300,1))
 exang=st.selectbox('Exercise Induced Angina',["Yes","No"])
-oldpeak=st.number_input('Oldpeak')
+oldpeak=st.number_input('ST Depression induced')
 slope = st.selectbox('Heart Rate Slope',("Upsloping: better heart rate with excercise(uncommon)","Flatsloping: minimal change(typical healthy heart)","Downsloping: signs of unhealthy heart"))
 ca=st.selectbox('Number of Major Vessels Colored by Flourosopy',range(0,5,1))
-thal=st.selectbox('Thalium Stress Result',range(1,8,1))
+thal=st.selectbox('Thalium Stress Result',("fixed defect: used to be defect but ok now","reversable defect: no proper blood movement when excercising","normal"))
 
 
 
@@ -112,7 +115,7 @@ pred=preprocess(age,sex,cp,trestbps,restecg,chol,fbs,thalach,exang,oldpeak,slope
 
 
 if st.button("Predict"):    
-  if pred[0] == 0:
+  if pred == 0:
     st.error('Warning! You have high risk of getting a heart attack!')
     
   else:
